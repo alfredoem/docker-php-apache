@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  db-upn:
+    image: mariadb:10.3
+    command: --default-authentication-plugin=mysql_native_password
+    restart: always
+    ports:
+      - '3306:3306'
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'true'
+      MYSQL_DATABASE: 'bdmovil'
+    volumes:
+      - ./data:/docker-entrypoint-initdb.d
+  app-upn:
+    depends_on:
+      - db-upn
+    build: './docker/php/'
+    container_name: dev-app-upn
+    ports:
+      - '3000:80'
+    volumes:
+      - ./src:/var/www/html/
+  app-db-admin:
+    image: phpmyadmin
+    depends_on:
+      - db-upn
+    container_name: dev-app-db-admin
+    ports:
+      - '8080:80'
+    environment:
+      - PMA_ARBITRARY=1
